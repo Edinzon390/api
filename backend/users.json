@@ -1,3 +1,12 @@
 {
-  "users": []
+  "users": [
+    {
+      "username": "codex_1773781417",
+      "password": "$2b$10$fkw.M8CAXWxIJ5c2hW.V2u89mQ457V6DOYpZzxEMrbD/.2jZf2ylG"
+    },
+    {
+      "username": "codex_1773781780",
+      "password": "$2b$10$CqSO4sLPR5FbtKR0WgcWt.NmpSmFdFABVsLHoerohHVjh0F4Kry6K"
+    }
+  ]
 }

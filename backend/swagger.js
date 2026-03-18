@@ -1,5 +1,10 @@
 import swaggerUi from "swagger-ui-express"
 import swaggerJsdoc from "swagger-jsdoc"
+import path from "path"
+import { fileURLToPath } from "url"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const swaggerOptions = {
     definition: {
@@ -29,7 +34,11 @@ const swaggerOptions = {
             }
         }
     },
-    apis: ["./routesV1.js", "./routesV2.js", "./auth.js"]
+    apis: [
+        path.join(__dirname, "routesV1.js"),
+        path.join(__dirname, "routesV2.js"),
+        path.join(__dirname, "auth.js")
+    ]
 }
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions)

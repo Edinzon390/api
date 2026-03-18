@@ -1,9 +1,13 @@
 import fs from "fs"
+import path from "path"
+import { fileURLToPath } from "url"
 
-const FILE = "./bancos.json"
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const FILE = path.join(__dirname, "bancos.json")
 
 export function leerDatos() {
-    const data = fs.readFileSync(FILE)
+    const data = fs.readFileSync(FILE, "utf-8")
     return JSON.parse(data)
 }
 

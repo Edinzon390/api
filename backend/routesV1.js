@@ -3,6 +3,10 @@ import { leerDatos, guardarDatos } from "./utils.js"
 
 const router = express.Router()
 
+function siguienteId(items) {
+    return items.reduce((max, item) => Math.max(max, Number(item.id) || 0), 0) + 1
+}
+
 /**
  * @swagger
  * /api/v1/banco:
@@ -138,8 +142,11 @@ router.get("/banco/:id/personas/:pid", (req, res) => {
  */
 router.post("/banco", (req, res) => {
     const data = leerDatos()
+    if (!req.body.nombre) {
+        return res.status(400).json({ mensaje: "El nombre del banco es requerido" })
+    }
     const nuevoBanco = {
-        id: data.bancos.length + 1,
+        id: siguienteId(data.bancos),
         nombre: req.body.nombre,
         ciudad: req.body.ciudad || "",
         telefono: req.body.telefono || "",
@@ -187,8 +194,11 @@ router.post("/banco/:id/personas", (req, res) => {
     if (!banco) {
         return res.status(404).json({mensaje: "Banco no encontrado"})
     }
+    if (!req.body.nombre) {
+        return res.status(400).json({ mensaje: "El nombre de la persona es requerido" })
+    }
     const nuevaPersona = {
-        id: banco.personas.length + 1,
+        id: siguienteId(banco.personas),
         nombre: req.body.nombre,
         cargo: req.body.cargo || "",
         email: req.body.email || ""

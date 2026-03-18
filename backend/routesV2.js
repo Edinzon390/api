@@ -4,6 +4,10 @@ import { verificarToken } from "./auth.js"
 
 const router = express.Router()
 
+function siguienteId(items) {
+    return items.reduce((max, item) => Math.max(max, Number(item.id) || 0), 0) + 1
+}
+
 /**
  * @swagger
  * /api/v2/banco:
@@ -113,10 +117,13 @@ router.get("/banco/:id/personas/:pid", (req, res) => {
     res.json({success: true, data: persona})
 })
 
-router.post("/banco", authenticateToken, (req, res) => {
+router.post("/banco", verificarToken, (req, res) => {
     const data = leerDatos()
+    if (!req.body.nombre) {
+        return res.status(400).json({ success: false, error: "El nombre del banco es requerido" })
+    }
     const nuevoBanco = {
-        id: data.bancos.length + 1,
+        id: siguienteId(data.bancos),
         nombre: req.body.nombre,
         ciudad: req.body.ciudad || "",
         telefono: req.body.telefono || "",
@@ -128,14 +135,17 @@ router.post("/banco", authenticateToken, (req, res) => {
     res.status(201).json({success: true, data: nuevoBanco})
 })
 
-router.post("/banco/:id/personas", authenticateToken, (req, res) => {
+router.post("/banco/:id/personas", verificarToken, (req, res) => {
     const data = leerDatos()
     const banco = data.bancos.find(b => b.id == req.params.id)
     if (!banco) {
         return res.status(404).json({success: false, error: "Banco no encontrado"})
     }
+    if (!req.body.nombre) {
+        return res.status(400).json({ success: false, error: "El nombre de la persona es requerido" })
+    }
     const nuevaPersona = {
-        id: banco.personas.length + 1,
+        id: siguienteId(banco.personas),
         nombre: req.body.nombre,
         cargo: req.body.cargo || "",
         email: req.body.email || ""
@@ -145,7 +155,7 @@ router.post("/banco/:id/personas", authenticateToken, (req, res) => {
     res.status(201).json({success: true, data: nuevaPersona})
 })
 
-router.put("/banco/:id", authenticateToken, (req, res) => {
+router.put("/banco/:id", verificarToken, (req, res) => {
     const data = leerDatos()
     const banco = data.bancos.find(b => b.id == req.params.id)
     if (!banco) {
@@ -159,7 +169,7 @@ router.put("/banco/:id", authenticateToken, (req, res) => {
     res.json({success: true, data: banco})
 })
 
-router.put("/banco/:id/personas/:pid", authenticateToken, (req, res) => {
+router.put("/banco/:id/personas/:pid", verificarToken, (req, res) => {
     const data = leerDatos()
     const banco = data.bancos.find(b => b.id == req.params.id)
     if (!banco) {
@@ -176,7 +186,7 @@ router.put("/banco/:id/personas/:pid", authenticateToken, (req, res) => {
     res.json({success: true, data: persona})
 })
 
-router.delete("/banco/:id/personas/:pid", authenticateToken, (req, res) => {
+router.delete("/banco/:id/personas/:pid", verificarToken, (req, res) => {
     const data = leerDatos()
     const banco = data.bancos.find(b => b.id == req.params.id)
     if (!banco) {

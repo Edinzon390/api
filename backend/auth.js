@@ -1,150 +1,237 @@
-import express from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { config } from 'dotenv';
-import fs from 'fs';
+import express from "express"
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
+import { config } from "dotenv"
+import fs from "fs"
+import path from "path"
+import { fileURLToPath } from "url"
 
-config();
+config()
 
-const app = express();
-app.use(express.json());
+const router = express.Router()
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const USERS_FILE = path.join(__dirname, "users.json")
 
-const USERS_FILE = './users.json';
-
-// 📌 Asegurar que el archivo existe
 function ensureUsersFile() {
-  if (!fs.existsSync(USERS_FILE)) {
-    fs.writeFileSync(USERS_FILE, JSON.stringify({ users: [] }, null, 2));
-  }
+    if (!fs.existsSync(USERS_FILE)) {
+        fs.writeFileSync(USERS_FILE, JSON.stringify({ users: [] }, null, 2))
+    }
 }
 
-// 📌 Leer usuarios
 function getUsers() {
-  ensureUsersFile();
-  const data = fs.readFileSync(USERS_FILE);
-  return JSON.parse(data).users;
+    ensureUsersFile()
+    const data = fs.readFileSync(USERS_FILE, "utf-8")
+    return JSON.parse(data).users
 }
 
-// 📌 Guardar usuarios
 function saveUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify({ users }, null, 2));
+    fs.writeFileSync(USERS_FILE, JSON.stringify({ users }, null, 2))
 }
 
-// 🔐 Middleware
+function getJwtSecret() {
+    return process.env.TOKEN_SECRET
+}
+
+function requireCredentials(req, res) {
+    const { username, password } = req.body
+
+    if (!username || !password) {
+        res.status(400).json({
+            ok: false,
+            mensaje: "username y password son requeridos"
+        })
+        return null
+    }
+
+    return { username: String(username).trim(), password: String(password) }
+}
+
 export function verificarToken(req, res, next) {
-  const authHeader = req.headers.authorization;
+    const authHeader = req.headers.authorization
+    const secret = getJwtSecret()
 
-  if (!authHeader) {
-    return res.status(401).json({
-      ok: false,
-      mensaje: 'Token requerido'
-    });
-  }
+    if (!secret) {
+        return res.status(500).json({
+            ok: false,
+            mensaje: "TOKEN_SECRET no esta configurado"
+        })
+    }
 
-  const token = authHeader.split(' ')[1];
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({
+            ok: false,
+            mensaje: "Token requerido"
+        })
+    }
 
-  try {
-    const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({
-      ok: false,
-      mensaje: 'Token inválido o expirado'
-    });
-  }
+    const token = authHeader.split(" ")[1]
+
+    try {
+        const decoded = jwt.verify(token, secret)
+        req.user = decoded
+        next()
+    } catch {
+        return res.status(401).json({
+            ok: false,
+            mensaje: "Token invalido o expirado"
+        })
+    }
 }
 
-// 📝 REGISTRO
-app.post('/register', async (req, res) => {
-  try {
-    const { username, password } = req.body;
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Registrar un nuevo usuario
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Usuario registrado
+ */
+router.post("/register", async (req, res) => {
+    try {
+        const credentials = requireCredentials(req, res)
+        if (!credentials) {
+            return
+        }
 
-    const users = getUsers();
+        const { username, password } = credentials
+        const users = getUsers()
 
-    const userExists = users.find(u => u.username === username);
-    if (userExists) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: 'El usuario ya existe'
-      });
+        const userExists = users.find((user) => user.username === username)
+        if (userExists) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: "El usuario ya existe"
+            })
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10)
+        users.push({ username, password: hashedPassword })
+        saveUsers(users)
+
+        res.status(201).json({
+            ok: true,
+            mensaje: "Usuario registrado",
+            user: { username }
+        })
+    } catch {
+        res.status(500).json({
+            ok: false,
+            mensaje: "Error en el servidor"
+        })
     }
+})
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Iniciar sesion y obtener un JWT
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login exitoso
+ */
+router.post("/login", async (req, res) => {
+    try {
+        const secret = getJwtSecret()
+        if (!secret) {
+            return res.status(500).json({
+                ok: false,
+                mensaje: "TOKEN_SECRET no esta configurado"
+            })
+        }
 
-    const newUser = { username, password: hashedPassword };
-    users.push(newUser);
+        const credentials = requireCredentials(req, res)
+        if (!credentials) {
+            return
+        }
 
-    saveUsers(users);
+        const { username, password } = credentials
+        const users = getUsers()
+        const user = users.find((savedUser) => savedUser.username === username)
 
-    res.status(201).json({
-      ok: true,
-      mensaje: 'Usuario registrado',
-      user: { username }
-    });
+        if (!user) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: "Usuario no encontrado"
+            })
+        }
 
-  } catch (error) {
-    res.status(500).json({
-      ok: false,
-      mensaje: 'Error en el servidor'
-    });
-  }
-});
+        const validPassword = await bcrypt.compare(password, user.password)
+        if (!validPassword) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: "Contrasena incorrecta"
+            })
+        }
 
-// 🔑 LOGIN
-app.post('/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
+        const token = jwt.sign({ username: user.username }, secret, { expiresIn: "1h" })
 
-    const users = getUsers();
-
-    const user = users.find(u => u.username === username);
-    if (!user) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: 'Usuario no encontrado'
-      });
+        res.json({
+            ok: true,
+            mensaje: "Login exitoso",
+            token
+        })
+    } catch {
+        res.status(500).json({
+            ok: false,
+            mensaje: "Error en el servidor"
+        })
     }
+})
 
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: 'Contraseña incorrecta'
-      });
-    }
-
-    const token = jwt.sign(
-      { username: user.username },
-      process.env.TOKEN_SECRET,
-      { expiresIn: '1h' }
-    );
-
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Validar el token actual
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token valido
+ */
+router.get("/me", verificarToken, (req, res) => {
     res.json({
-      ok: true,
-      mensaje: 'Login exitoso',
-      token
-    });
+        ok: true,
+        mensaje: "Acceso concedido",
+        user: req.user
+    })
+})
 
-  } catch (error) {
-    res.status(500).json({
-      ok: false,
-      mensaje: 'Error en el servidor'
-    });
-  }
-});
-
-// 🔒 Ruta protegida
-app.get('/', verificarToken, (req, res) => {
-  res.json({
-    ok: true,
-    mensaje: 'Acceso concedido',
-    user: req.user
-  });
-});
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
-});
+export default router

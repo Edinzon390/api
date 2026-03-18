@@ -1,14 +1,18 @@
 import express from "express"
+import path from "path"
+import { fileURLToPath } from "url"
 import routesV1 from "./routesV1.js"
 import routesV2 from "./routesV2.js"
 import authRouter from "./auth.js"
 import { setupSwagger } from "./swagger.js"
 
 const app = express()
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 app.use(express.json())
 
 // Servir frontend estático (opcional): http://localhost:3000/app/
-app.use("/app", express.static("frontend"))
+app.use("/app", express.static(path.join(__dirname, "..", "frontend")))
 
 // Autenticación
 app.use("/api/auth", authRouter)
