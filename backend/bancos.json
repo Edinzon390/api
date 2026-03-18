@@ -1,0 +1,135 @@
+{
+  "bancos": [
+    {
+      "id": 1,
+      "nombre": "Banco Popular Dominicano",
+      "ciudad": "Santiago",
+      "telefono": "+1-809-999-9999",
+      "email": "info@bancopropular.com",
+      "personas": [
+        {
+          "id": 1,
+          "nombre": "Juan Carlos Perez",
+          "cargo": "Gerente Senior",
+          "email": "juancarlos@banco.com"
+        },
+        {
+          "id": 3,
+          "nombre": "Rosa Maria",
+          "cargo": "Asesora de Inversiones",
+          "email": "rosa.maria@bancopropular.com"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "nombre": "BanReservas",
+      "ciudad": "Santo Domingo",
+      "telefono": "+1-809-540-2000",
+      "email": "contacto@banreservas.com",
+      "personas": [
+        {
+          "id": 1,
+          "nombre": "Carlos Ramirez",
+          "cargo": "Presidente",
+          "email": "carlos.ramirez@banreservas.com"
+        },
+        {
+          "id": 2,
+          "nombre": "Maria Lopez",
+          "cargo": "Vicepresidenta",
+          "email": "maria.lopez@banreservas.com"
+        },
+        {
+          "id": 3,
+          "nombre": "Roberto Silva",
+          "cargo": "Director de Operaciones",
+          "email": "roberto.silva@banreservas.com"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "nombre": "Scotiabank",
+      "ciudad": "Santo Domingo",
+      "telefono": "+1-809-544-0600",
+      "email": "info@scotiabank.com.do",
+      "personas": [
+        {
+          "id": 1,
+          "nombre": "Pedro Martinez",
+          "cargo": "Gerente Regional",
+          "email": "pedro.martinez@scotiabank.com.do"
+        },
+        {
+          "id": 2,
+          "nombre": "Sofia Avila",
+          "cargo": "Ejecutiva de Cuenta",
+          "email": "sofia.avila@scotiabank.com.do"
+        },
+        {
+          "id": 3,
+          "nombre": "Lucas Rodriguez",
+          "cargo": "Asistente",
+          "email": "lucas@banco.com"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "nombre": "BAGRICOLA",
+      "ciudad": "Santiago",
+      "telefono": "+1-809-241-8211",
+      "email": "info@bagricola.com.do",
+      "personas": [
+        {
+          "id": 1,
+          "nombre": "Luis Hernandez",
+          "cargo": "Gerente General",
+          "email": "luis.hernandez@bagricola.com.do"
+        },
+        {
+          "id": 2,
+          "nombre": "Clara Dominguez",
+          "cargo": "Jefa de Creditos",
+          "email": "clara.dominguez@bagricola.com.do"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "nombre": "Banco Progreso",
+      "ciudad": "La Romana",
+      "telefono": "+1-809-813-8000",
+      "email": "contacto@bancoprogreso.com.do",
+      "personas": [
+        {
+          "id": 1,
+          "nombre": "Miguel Torres",
+          "cargo": "Director Ejecutivo",
+          "email": "miguel.torres@bancoprogreso.com.do"
+        },
+        {
+          "id": 2,
+          "nombre": "Valentina Cruz",
+          "cargo": "Subdirectora",
+          "email": "valentina.cruz@bancoprogreso.com.do"
+        },
+        {
+          "id": 3,
+          "nombre": "Diego Moreno",
+          "cargo": "Asesor Comercial",
+          "email": "diego.moreno@bancoprogreso.com.do"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "nombre": "Banco Metropolitano",
+      "ciudad": "San Cristobal",
+      "telefono": "+1-809-528-1212",
+      "email": "info@metropolitano.com",
+      "personas": []
+    }
+  ]
+}

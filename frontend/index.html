@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Auth App</title>
+  <link rel="stylesheet" href="css.css">
+</head>
+<body>
+
+<div class="container">
+  <div class="form-box">
+
+    <h2 id="title">Login</h2>
+
+    <form id="form">
+      <input type="text" id="username" placeholder="Usuario" required>
+      <input type="password" id="password" placeholder="Contraseña" required>
+
+      <button type="submit">Enviar</button>
+    </form>
+
+    <p id="toggleText">
+      ¿No tienes cuenta? <span id="toggle">Regístrate</span>
+    </p>
+
+    <p id="message"></p>
+
+  </div>
+</div>
+
+<script>
+const form = document.getElementById("form");
+const toggle = document.getElementById("toggle");
+const title = document.getElementById("title");
+const message = document.getElementById("message");
+
+let isLogin = true;
+
+toggle.addEventListener("click", () => {
+  isLogin = !isLogin;
+
+  title.textContent = isLogin ? "Login" : "Registro";
+  toggle.textContent = isLogin ? "Regístrate" : "Inicia sesión";
+});
+
+// 🔥 TU API DE RENDER
+const API = "https://myapi-nsw1.onrender.com";
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  const endpoint = isLogin ? "/login" : "/register";
+
+  try {
+    const res = await fetch(API + endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if (data.ok) {
+      message.style.color = "green";
+      message.textContent = data.mensaje;
+
+      if (isLogin) {
+        localStorage.setItem("token", data.token);
+      }
+
+    } else {
+      message.style.color = "red";
+      message.textContent = data.mensaje;
+    }
+
+  } catch (error) {
+    message.style.color = "red";
+    message.textContent = "Error al conectar con la API";
+  }
+});
+</script>
+
+</body>
+</html>
