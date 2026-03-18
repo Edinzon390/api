@@ -15,9 +15,8 @@ app.use(express.json())
 app.use("/app", express.static(path.join(__dirname, "..", "frontend")))
 
 // Autenticación
-app.use("/api/auth", authRouter)
+app.use("/auth/login", authRouter)
 
-// Usar rutas versionadas PRIMERO
 app.use("/api/v1", routesV1)
 app.use("/api/v2", routesV2)
 
